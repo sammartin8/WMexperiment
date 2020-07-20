@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My experiment</title>
+    <script src="jspsych/jspsych.js"></script>
+    <script src="jspsych/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych/plugins/jspsych-image-keyboard-response.js"></script>
+    <link href="jspsych/css/jspsych.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+  <script>
+    
+    var timeline = []
+
+    var welcome = {
+        type: "html-keyboard-response",
+        stimulus: "Welcome to my experiment. Click any key to see the instructions!"
+    };
+    timeline.push(welcome);
+      
+    var instructions = {
+        type: 'html-keyboard-response',
+        stimulus: "<p>In this experiment, you will be presented with a series of orange and blue circles.</p><p>For each trial, you will be presented one circle for 2 seconds, followed by another circle, with a 5 second intermission between presentations.</p><p>After each pair of circles, you will the be asked to indicate if the circles were the same color or different colors.</p><p>Click any key to begin!</p>"
+    }
+    timeline.push(instructions);
+    
+    var trial_1 = {
+        type: 'image-keyboard-response',
+        stimulus: function () {
+            var num_1 = Math.floor(Math.random() * 2)
+            if (num_1 === 0)
+                return 'jsPsych/examples/img/orange.png'
+            else
+                return 'jsPsych/examples/img/blue.png'
+        },
+        choices: jsPsych.NO_KEYS,
+        trial_duration: 2000,
+        post_trial_gap: 5000
+    };
+      
+    var trial_2 = {
+        type: 'image-keyboard-response',
+        stimulus: function () {
+            var num_2 = Math.floor(Math.random() * 2)
+            if (num_2 === 0)
+                return 'jsPsych/examples/img/orange.png'
+            else
+                return 'jsPsych/examples/img/blue.png'
+        },
+        choices: jsPsych.NO_KEYS,
+        trial_duration: 2000,
+        post_trial_gap: 1500
+    };
+
+      
+    var question = {
+        type:'html-keyboard-response',
+        stimulus: "<p>Were the circles the same color?</p><p>Press 'y' for yes and 'n' for no</p>",
+        choices: ['y','n'],
+        data: {correct_response: function() {
+            if (jsPsych.data.get().select('stimulus').values[2] === jsPsych.data.get().select('stimulus').values[3]) 
+                return 'y'
+            else 
+                return 'n'
+        }
+              },
+        on_finish: function(data){
+            var accuracy = false;
+            if (data.correct_response === jsPsych.pluginAPI.convertKeyCodeToKeyCharacter(data.key_press)) {
+                accuracy = true;
+            }
+            data.accuracy = accuracy;
+        },
+        post_trial_gap: 1000
+    };
+      
+    var feedback = {
+            type: 'html-keyboard-response',
+            stimulus: function() {
+                var feedback_text = '<span style="30px;color:red">Incorrect</span>';
+                var last_trial_accuracy = jsPsych.data.getLastTrialData().values()[0].accuracy;
+                if (last_trial_accuracy == true) {
+                    feedback_text = "Correct!"
+                }
+                return feedback_text
+            },
+            choices: jsPsych.NO_KEYS,
+            trial_duration: 3000
+    };
+      
+    var working_memory_procedure = {
+        timeline: [trial_1,trial_2, question, feedback],
+        repetitions: 5
+    };
+    timeline.push(working_memory_procedure);
+      
+    jsPsych.init({
+            timeline: timeline,
+            on_finish: function() {
+                jsPsych.data.displayData();
+        }
+        });
+  
+  </script>
+  </body>
+  </html>
